@@ -1,0 +1,22 @@
+canvas.a-canvas.a-grab-cursor {
+	height: 300px !important;
+	/*height: 50%;*/
+}
+
+footer.main-footer {
+	/*margin-top: 400px;*/
+}
+
+html.a-html {
+	position: relative;
+}
+
+body.a-body {
+	height: auto;
+	overflow: auto;
+}
+
+a-scene {
+	position: static !important;
+	height: 400px;
+}

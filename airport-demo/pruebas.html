@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Pruebas Airport</title>
+  <!-- css para gob-->
+  <link href="https://framework-gb.cdn.gob.mx/qa/assets/styles/main.css" rel="stylesheet">
+	<!-- Jala archivos por cdn  -->
+	<script src="https://aframe.io/releases/0.6.0/aframe.min.js"></script>
+	<script src="https://npmcdn.com/aframe-animation-component@3.0.1"></script>
+  <script src="https://npmcdn.com/aframe-event-set-component@3.0.1"></script>
+  <script src="https://npmcdn.com/aframe-layout-component@3.0.1"></script>
+  <script src="https://npmcdn.com/aframe-template-component@3.1.1"></script>
+  <link rel="stylesheet" type="text/css" href="css/canvas-main.css">
+  <!-- Manda a llamar el esquema del componente -->
+  <script src="components/set-image.js"></script>
+  <script src="https://framework-gb.cdn.gob.mx/qa/gobmx.js"></script>
+</head>
+<body>
+<main class="page">
+  <div class="container">.
+  	<a-scene>
+        <a-assets>
+          <img id="city" crossorigin="anonymous" src="img/maxresdefault.jpg">
+          <img id="city-thumb" crossorigin="anonymous" src="https://cdn.aframe.io/360-image-gallery-boilerplate/img/thumb-city.jpg">
+          <img id="cubes-thumb" crossorigin="anonymous" src="https://cdn.aframe.io/360-image-gallery-boilerplate/img/thumb-cubes.jpg">
+          <img id="sechelt-thumb" crossorigin="anonymous" src="https://cdn.aframe.io/360-image-gallery-boilerplate/img/thumb-sechelt.jpg">
+          <audio id="click-sound" crossorigin="anonymous" src="https://cdn.aframe.io/360-image-gallery-boilerplate/audio/click.ogg"></audio>
+          <img id="cubes" crossorigin="anonymous" src="img/cuartel.jpg">
+          <img id="sechelt" crossorigin="anonymous" src="img/paisaje.jpg">
+        <!-- EMPIEZA IMAGENES PLANAS -->
+          <!-- Image link template to be reused. -->
+          <!-- Es un compenente llamado link (produce una accion al clickear) 
+                  Sintaxis:
+                    <a-entity ${componentName}="${propertyName1}: ${propertyValue1}; ${propertyName2:}: ${propertyValue2}">
+              Un componente link tiene las propiedades: 
+                geometry = forma que toma el área a clickear, 
+                material = "textura" que toma el componente (figura) 
+                      -> flat = no se ve afectado por los efectos de iluminación
+                      -> src = origen de la textura. ${thumb} variable en el template
+                        con data-thumb="" en la instancia se cambia el valor de la variable,
+                event-set_# = proporciona un método para lanzar una acción al ocurrir un hover o click,
+                set-image= componente registrado, especificado en set-image.js
+                sound = sonido que se ejecuta al hacer click
+                    src: #algo  -> using the asset management system 
+                          -> mediante esta llamada (por su ID) se precarga el origen del recurso aún cuando no se utilice.
+          -->
+
+          <script id="link" type="text/html">
+            <a-entity class="link"
+              geometry="primitive: plane; height: 1; width: 1"
+              material="shader: flat; src: ${thumb}"
+              event-set__1="_event: mousedown; scale: 1 1 1"
+              event-set__2="_event: mouseup; scale: 1.2 1.2 1"
+              event-set__3="_event: mouseenter; scale: 1.2 1.2 1"
+              event-set__4="_event: mouseleave; scale: 1 1 1"
+              set-image="on: click; target: #image-360; src: ${src}"
+              sound="on: click; src: #click-sound"></a-entity>
+          </script>
+          
+        </a-assets>
+    
+    <!-- 360-degree image. 
+    sky es una img mapeada como esfera, sirve como fondo para la escena.
+    Actualmente no entiendo la función de radius, pero si lo bajo a 5 se corta una wildcard, 
+    si, es menos, desaparecen todas. El valor por defecto es 5000
+    -->
+        <a-sky id="image-360" radius="10" src="#city"></a-sky>
+   
+    <!-- Image links. 
+    Los componentes de tipo layout son capas que permiten posicionar a los elementos,
+    posicionandolos con respectoa a sus padres.
+    type = line (permite, posicionar los elementos hijos en formados linealmente), 
+    margin = espacio entre cada wildcard, 
+    position {x,y,z} 
+      -> -z permite ver el elemento hacia el fondo de la pantalla, a veces con +z no se ve el elemento
+      -> +x desplaza el elemento haciala derecha de la pantalla. El punto de referencia es el circulo
+         que se encuentra en el centro de la pantalla.
+      -> +y desplaza hacia arriba; -y hacia abajo
+    --> <!-- intentar hacer figuras -->
+        <a-entity id="links" layout="type: line; margin: 2.5" position="0 -1 -4">
+          <a-entity template="src:  #link" data-src="#cubes" data-thumb="#cubes-thumb"></a-entity>
+          <a-entity template="src: #link" data-src="#city" data-thumb="#city-thumb"></a-entity>
+          <a-entity template="src: #link" data-src="#sechelt" data-thumb="#sechelt-thumb"></a-entity>
+        </a-entity>
+
+        <!-- FIN DE IMAGENES PLANAS -->
+
+    <!-- Camera + Cursor. 
+    camera:componente que define la vista que tiene el usuario de la escena
+    userHeight: define la altura a la que está situada la camara, comunmente 1.6 (mts),
+    look-controls: brinda funcionalidad y eventos de movimientos 
+        Rotates the entity when we click-drag mouse.
+        Rotates the entity when we touch-drag the touchscreen.
+
+    cursor: 
+      Permite definir el comportamento ante los eventos click.
+      animation__click = basado en el componente animation, es una variación:
+             we can attach multiple animations to one entity by name-spacing the component with double 
+             underscores (__):
+            además, este componente es tomado de un cdn externo: 
+              https://github.com/ngokevin/kframe/tree/master/components/animation/
+        property: scale, propiedada a animar del componente clickeado,
+         startEvents, from, dur
+
+      Buena documentación de VR:
+      https://books.google.com.mx/books?id=R8JCDgAAQBAJ&pg=PA23&lpg=PA23&dq=diferencia+entre+camera+y+cursor+aframe&source=bl&ots=cmY6m4vE1r&sig=fF7ltqPDQrE5gaPtnct9o4VByTw&hl=es-419&sa=X&ved=0ahUKEwj5_aHcn_jUAhUK6CYKHdgiAvsQ6AEIOjAD#v=onepage&q=diferencia%20entre%20camera%20y%20cursor%20aframe&f=false
+    -->
+        <a-entity camera look-controls>
+              <a-cursor id="cursor"
+                animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+                animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
+                event-set__1="_event: mouseenter; color: springgreen"
+                event-set__2="_event: mouseleave; color: black"
+                fuse="true"
+                raycaster="objects: .link"></a-cursor>
+        </a-entity>
+    </a-scene>
+  </div>
+</main>
+
+<script type="text/javascript" src="canvas-main.js"></script>
+</body>
+</html>
